@@ -6,10 +6,12 @@ import rehypeHighlight from 'rehype-highlight'
 import { PenLine } from 'lucide-react'
 import type { Language, Theme } from '../types'
 import { isSafeUrl } from '../utils/securityUtils'
+import { exportElementAsPng } from '../utils/exportUtils'
 import { getTranslation } from '../locales'
 
 export interface PreviewHandle {
   scrollToPercentage: (percentage: number) => void
+  exportAsPng: (filename: string) => Promise<boolean>
 }
 
 interface PreviewProps {
@@ -52,6 +54,23 @@ export const Preview = forwardRef<PreviewHandle, PreviewProps>(({
       setTimeout(() => {
         isScrollingFromSync.current = false
       }, 50)
+    },
+    exportAsPng: async (filename: string) => {
+      const el = containerRef.current
+      if (!el) return false
+
+      const scrollHeight = el.scrollHeight
+      const scrollWidth = el.scrollWidth
+
+      return await exportElementAsPng(el, filename, {
+        height: scrollHeight,
+        width: scrollWidth,
+        style: {
+          height: `${scrollHeight}px`,
+          maxHeight: 'none',
+          overflow: 'visible',
+        },
+      })
     },
   }))
 

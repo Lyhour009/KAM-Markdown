@@ -2,6 +2,8 @@ import React, { useRef, useState, useEffect } from 'react'
 import {
   FolderOpen,
   Download,
+  FileImage,
+  Loader2,
   Sun,
   Moon,
   MoreHorizontal,
@@ -26,6 +28,8 @@ interface HeaderProps {
   onFileSelect: (file: File) => void
   onCopyClick: () => void
   onDownloadClick: () => void
+  onExportPngClick: () => void
+  isExportingPng?: boolean
   onResetClick: () => void
   onSecurityClick: () => void
   onShortcutsClick: () => void
@@ -42,6 +46,8 @@ export const Header: React.FC<HeaderProps> = ({
   onFileSelect,
   onCopyClick,
   onDownloadClick,
+  onExportPngClick,
+  isExportingPng = false,
   onResetClick,
   onSecurityClick,
   onShortcutsClick,
@@ -130,7 +136,23 @@ export const Header: React.FC<HeaderProps> = ({
             <span>{t('downloadFile')}</span>
           </button>
 
-          {/* 3. Theme Toggle (Neutral) */}
+          {/* 3. Export PNG Button */}
+          <button
+            type="button"
+            onClick={onExportPngClick}
+            disabled={isExportingPng}
+            className="inline-flex items-center gap-1.5 rounded-md border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1.5 text-xs sm:text-sm font-medium text-[var(--text-primary)] hover:bg-[var(--surface-hover)] transition-colors shadow-2xs disabled:opacity-50"
+            title={t('exportPng')}
+          >
+            {isExportingPng ? (
+              <Loader2 className="h-4 w-4 text-[var(--accent)] animate-spin stroke-[1.75]" />
+            ) : (
+              <FileImage className="h-4 w-4 text-[var(--accent)] stroke-[1.75]" />
+            )}
+            <span className="hidden sm:inline">{isExportingPng ? t('exportingPng') : t('exportPng')}</span>
+          </button>
+
+          {/* 4. Theme Toggle (Neutral) */}
           <button
             type="button"
             onClick={onToggleTheme}
@@ -141,7 +163,7 @@ export const Header: React.FC<HeaderProps> = ({
             {theme === 'dark' ? <Sun className="h-4 w-4 text-amber-400 stroke-[1.75]" /> : <Moon className="h-4 w-4 text-[var(--text-secondary)] stroke-[1.75]" />}
           </button>
 
-          {/* 4. "⋯ More" Dropdown Menu */}
+          {/* 5. "⋯ More" Dropdown Menu */}
           <div className="relative" ref={menuRef}>
             <button
               type="button"
@@ -167,6 +189,21 @@ export const Header: React.FC<HeaderProps> = ({
               >
                 {/* Secondary Actions */}
                 <div className="py-1">
+                  {/* Export as PNG */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onExportPngClick()
+                      setIsMenuOpen(false)
+                    }}
+                    disabled={isExportingPng}
+                    className="flex w-full items-center gap-2.5 px-3.5 py-2 text-[var(--text-primary)] hover:bg-[var(--surface-hover)] transition-colors text-left disabled:opacity-50"
+                    role="menuitem"
+                  >
+                    <FileImage className="h-4 w-4 text-[var(--accent)] stroke-[1.75]" />
+                    <span>{t('exportPng')}</span>
+                  </button>
+
                   {/* Copy Markdown */}
                   <button
                     type="button"

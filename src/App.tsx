@@ -190,6 +190,27 @@ export function App() {
     showToast(language === 'km' ? 'បានទាញយកឯកសារ!' : 'Markdown file downloaded!')
   }, [title, content, language, showToast])
 
+  // Export Preview as PNG
+  const [isExportingPng, setIsExportingPng] = useState<boolean>(false)
+
+  const handleExportPng = useCallback(async () => {
+    if (!previewRef.current) return
+    setIsExportingPng(true)
+    try {
+      const success = await previewRef.current.exportAsPng(title)
+      if (success) {
+        showToast(t('exportPngSuccess'), 'success')
+      } else {
+        showToast(t('exportPngFailed'), 'error')
+      }
+    } catch (err) {
+      console.error('Export PNG failed:', err)
+      showToast(t('exportPngFailed'), 'error')
+    } finally {
+      setIsExportingPng(false)
+    }
+  }, [title, showToast, t])
+
   // Reset Document to starter
   const handleConfirmReset = useCallback(() => {
     const starter = language === 'km' ? STARTER_DOCUMENT_KM : STARTER_DOCUMENT_EN
@@ -273,6 +294,8 @@ export function App() {
           onFileSelect={loadFile}
           onCopyClick={handleCopy}
           onDownloadClick={handleDownload}
+          onExportPngClick={handleExportPng}
+          isExportingPng={isExportingPng}
           onResetClick={() => setIsResetModalOpen(true)}
           onSecurityClick={() => setIsSecurityModalOpen(true)}
           onShortcutsClick={() => setIsShortcutsModalOpen(true)}

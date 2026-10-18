@@ -1,3 +1,5 @@
+import { toPng } from 'html-to-image'
+
 /**
  * Triggers a browser download of the given markdown content.
  */
@@ -43,6 +45,50 @@ export async function copyToClipboard(text: string): Promise<boolean> {
     return successful
   } catch (err) {
     console.error('Failed to copy text fallback:', err)
+    return false
+  }
+}
+
+/**
+ * Exports a DOM element as a high-resolution PNG image and initiates download.
+ */
+export async function exportElementAsPng(
+  element: HTMLElement,
+  filename: string,
+  customOptions?: Record<string, any>
+): Promise<boolean> {
+  const baseName = filename.replace(/\.(md|markdown|txt)$/i, '')
+  const safeFilename = `${baseName || 'preview'}.png`
+
+  const isDark = document.documentElement.classList.contains('dark')
+  const bgColor = isDark ? '#1B1A18' : '#FFFFFF'
+
+  const options = {
+    quality: 0.95,
+    pixelRatio: 2, // 2x crisp retina resolution
+    backgroundColor: bgColor,
+    cacheBust: true,
+    ...customOptions,
+  }
+
+  try {
+    let dataUrl: string
+    try {
+      dataUrl = await toPng(element, options)
+    } catch (fontErr) {
+      console.warn('html-to-image with fonts failed, retrying with skipFonts: true', fontErr)
+      dataUrl = await toPng(element, { ...options, skipFonts: true })
+    }
+
+    const link = document.createElement('a')
+    link.href = dataUrl
+    link.download = safeFilename
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    return true
+  } catch (err) {
+    console.error('Failed to export element as PNG:', err)
     return false
   }
 }
