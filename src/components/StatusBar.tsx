@@ -19,41 +19,43 @@ export const StatusBar: React.FC<StatusBarProps> = ({
   const showReadingTime = stats.words >= 50
 
   return (
-    <footer className="border-t border-[var(--border)] bg-[var(--surface-secondary)] px-4 py-1 text-xs text-[var(--text-secondary)] flex items-center justify-between gap-3 select-none transition-colors">
-      {/* Left: Cursor Position & Muted Counts */}
-      <div className="flex items-center gap-2.5 sm:gap-3 font-mono text-[11px] sm:text-xs">
-        <div>
+    <footer className="border-t border-[var(--border)] bg-[var(--surface-secondary)] px-2.5 sm:px-4 py-1 text-xs text-[var(--text-secondary)] flex items-center justify-between gap-2 select-none transition-colors shrink-0 whitespace-nowrap overflow-hidden">
+      {/* Left: Cursor Position & Essential Counts */}
+      <div className="flex items-center gap-2 sm:gap-3 font-mono text-[11px] sm:text-xs min-w-0">
+        <div className="shrink-0">
           <span>{t('ln')} {stats.cursorLine}</span>
-          <span className="mx-1 text-[var(--text-muted)] opacity-50">,</span>
+          <span className="mx-0.5 sm:mx-1 text-[var(--text-muted)] opacity-50">,</span>
           <span>{t('col')} {stats.cursorCol}</span>
         </div>
 
-        <span className="text-[var(--text-muted)] opacity-50">•</span>
+        <span className="text-[var(--text-muted)] opacity-50 shrink-0">•</span>
 
-        <div className="font-sans">
+        <div className="font-sans shrink-0">
           <span>{stats.words.toLocaleString()} {t('words')}</span>
         </div>
 
-        <span className="text-[var(--text-muted)] opacity-50 hidden sm:inline">•</span>
+        <span className="text-[var(--text-muted)] opacity-50 hidden sm:inline shrink-0">•</span>
 
-        <div className="font-sans hidden sm:inline">
+        <div className="font-sans hidden sm:inline shrink-0">
           <span>{stats.characters.toLocaleString()} {t('chars')}</span>
         </div>
 
         {showReadingTime && (
           <>
-            <span className="text-[var(--text-muted)] opacity-50 hidden md:inline">•</span>
-            <div className="font-sans hidden md:inline">
+            <span className="text-[var(--text-muted)] opacity-50 hidden md:inline shrink-0">•</span>
+            <div className="font-sans hidden md:inline shrink-0">
               <span>~{stats.readingTimeMinutes} {t('minRead')}</span>
             </div>
           </>
         )}
       </div>
 
-      {/* Right: Autosave Note & Markdown tag with quiet indicator */}
-      <div className="flex items-center gap-1.5 text-[11px] sm:text-xs">
+      {/* Right: Autosave status indicator */}
+      <div className="flex items-center gap-1.5 text-[11px] sm:text-xs shrink-0">
         <span className={`inline-block h-1.5 w-1.5 rounded-full transition-colors ${isSaving ? 'bg-amber-400 animate-pulse' : 'bg-[var(--success)]'}`} />
-        <span className="hidden sm:inline text-[var(--text-secondary)]">{isSaving ? t('saving') : t('markdownHint')}</span>
+        <span className="text-[var(--text-secondary)]">
+          {isSaving ? t('saving') : <span className="hidden xs:inline">{t('savedLocally')}</span>}
+        </span>
       </div>
     </footer>
   )

@@ -55,7 +55,12 @@
     --selection-bg: rgba(149, 139, 255, 0.28);
   }
   
-  html {
+  html, body {
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
+    height: 100%;
+    height: 100dvh;
     font-family: var(--font-sans);
     line-height: 1.7; /* Crucial for Khmer vowel and subscript height */
     -webkit-font-smoothing: antialiased;

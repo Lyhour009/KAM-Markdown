@@ -4,6 +4,8 @@ export type Language = 'en' | 'km'
 
 export type ActiveTab = 'editor' | 'preview' | 'split'
 
+export type MobileTab = 'editor' | 'preview'
+
 export interface EditorStats {
   lines: number
   characters: number

@@ -11,6 +11,8 @@ export interface EditorHandle {
   setSelection: (start: number, end: number) => void
   focus: () => void
   scrollToPercentage: (percentage: number) => void
+  getScrollPosition: () => number
+  setScrollPosition: (scrollTop: number) => void
 }
 
 interface EditorProps {
@@ -69,6 +71,16 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(({
       setTimeout(() => {
         isScrollingFromSync.current = false
       }, 50)
+    },
+    getScrollPosition: () => {
+      const scroller = cmRef.current?.view?.scrollDOM
+      return scroller ? scroller.scrollTop : 0
+    },
+    setScrollPosition: (scrollTop: number) => {
+      const scroller = cmRef.current?.view?.scrollDOM
+      if (scroller) {
+        scroller.scrollTop = scrollTop
+      }
     },
   }))
 

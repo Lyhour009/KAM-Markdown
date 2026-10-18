@@ -53,17 +53,18 @@ export const Toolbar: React.FC<ToolbarProps> = ({
 }) => {
   const t = (key: any) => getTranslation(language, key)
 
-  const toolBtn = "h-7 w-7 flex items-center justify-center rounded-md hover:bg-[var(--surface-hover)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors focus:outline-none focus:ring-1 focus:ring-[var(--accent)] shrink-0"
+  const toolBtn = "h-8 w-8 sm:h-7 sm:w-7 min-w-[32px] sm:min-w-[28px] flex items-center justify-center rounded-md hover:bg-[var(--surface-hover)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors focus:outline-none focus:ring-1 focus:ring-[var(--accent)] shrink-0 touch-manipulation"
 
   const isRatioModified = activeTab === 'split' && Math.round(splitRatio) !== 50
 
   return (
-    <div className="border-b border-[var(--border)] bg-[var(--surface)] px-3 sm:px-4 py-1.5 flex items-center justify-between gap-3 text-sm select-none overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-      {/* Left: Compact formatting actions in a single row */}
-      <div className="flex items-center gap-0.5 sm:gap-1 shrink-0 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+    <div className="border-b border-[var(--border)] bg-[var(--surface)] px-2.5 sm:px-4 py-1.5 flex items-center justify-between gap-2 sm:gap-3 text-sm select-none overflow-x-auto touch-pan-x [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      {/* Left: Compact formatting actions in a single scrollable row */}
+      <div className="flex items-center gap-1 sm:gap-1 shrink-0 overflow-x-auto touch-pan-x [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {/* Text styling */}
         <button
           type="button"
+          onMouseDown={(e) => e.preventDefault()}
           onClick={() => onFormat('bold')}
           className={toolBtn}
           title={t('bold')}
@@ -74,6 +75,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
 
         <button
           type="button"
+          onMouseDown={(e) => e.preventDefault()}
           onClick={() => onFormat('italic')}
           className={toolBtn}
           title={t('italic')}
@@ -84,6 +86,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
 
         <button
           type="button"
+          onMouseDown={(e) => e.preventDefault()}
           onClick={() => onFormat('strikethrough')}
           className={toolBtn}
           title={t('strikethrough')}
@@ -97,6 +100,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
         {/* Headings */}
         <button
           type="button"
+          onMouseDown={(e) => e.preventDefault()}
           onClick={() => onFormat('h1')}
           className={toolBtn}
           title={t('heading1')}
@@ -107,6 +111,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
 
         <button
           type="button"
+          onMouseDown={(e) => e.preventDefault()}
           onClick={() => onFormat('h2')}
           className={toolBtn}
           title={t('heading2')}
@@ -117,6 +122,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
 
         <button
           type="button"
+          onMouseDown={(e) => e.preventDefault()}
           onClick={() => onFormat('h3')}
           className={toolBtn}
           title={t('heading3')}
@@ -130,6 +136,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
         {/* Links, Quotes & Code */}
         <button
           type="button"
+          onMouseDown={(e) => e.preventDefault()}
           onClick={() => onFormat('link')}
           className={toolBtn}
           title={t('link')}
@@ -140,6 +147,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
 
         <button
           type="button"
+          onMouseDown={(e) => e.preventDefault()}
           onClick={() => onFormat('quote')}
           className={toolBtn}
           title={t('quote')}
@@ -150,6 +158,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
 
         <button
           type="button"
+          onMouseDown={(e) => e.preventDefault()}
           onClick={() => onFormat('code')}
           className={toolBtn}
           title={t('codeInline')}
@@ -160,6 +169,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
 
         <button
           type="button"
+          onMouseDown={(e) => e.preventDefault()}
           onClick={() => onFormat('codeblock')}
           className={toolBtn}
           title={t('codeBlock')}
@@ -173,6 +183,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
         {/* Lists & Structured elements */}
         <button
           type="button"
+          onMouseDown={(e) => e.preventDefault()}
           onClick={() => onFormat('bullet')}
           className={toolBtn}
           title={t('bulletList')}
@@ -183,6 +194,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
 
         <button
           type="button"
+          onMouseDown={(e) => e.preventDefault()}
           onClick={() => onFormat('number')}
           className={toolBtn}
           title={t('numberedList')}
@@ -193,6 +205,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
 
         <button
           type="button"
+          onMouseDown={(e) => e.preventDefault()}
           onClick={() => onFormat('task')}
           className={toolBtn}
           title={t('taskList')}
@@ -203,6 +216,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
 
         <button
           type="button"
+          onMouseDown={(e) => e.preventDefault()}
           onClick={() => onFormat('table')}
           className={toolBtn}
           title={t('table')}
@@ -213,6 +227,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
 
         <button
           type="button"
+          onMouseDown={(e) => e.preventDefault()}
           onClick={() => onFormat('hr')}
           className={toolBtn}
           title={t('horizontalRule')}
@@ -222,8 +237,8 @@ export const Toolbar: React.FC<ToolbarProps> = ({
         </button>
       </div>
 
-      {/* Right: Consolidated View Controls, Sync Scroll, Focus Mode */}
-      <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 ml-auto">
+      {/* Right: Consolidated View Controls, Sync Scroll, Focus Mode (Desktop only) */}
+      <div className="hidden md:flex items-center gap-1.5 sm:gap-2 shrink-0 ml-auto">
         {/* Reset Layout 50/50 button (visible when ratio is customized) */}
         {isRatioModified && (
           <button

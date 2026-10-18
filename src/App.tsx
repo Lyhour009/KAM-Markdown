@@ -10,13 +10,15 @@ import { ResizableDivider } from './components/ResizableDivider'
 import { FocusModeBanner } from './components/FocusModeBanner'
 import { SecurityModal } from './components/SecurityModal'
 import { ShortcutsModal } from './components/ShortcutsModal'
+import { MobileTabBar } from './components/MobileTabBar'
 import { useTheme } from './hooks/useTheme'
 import { useLanguage } from './hooks/useLanguage'
+import { useMediaQuery } from './hooks/useMediaQuery'
 import { STARTER_DOCUMENT_EN, STARTER_DOCUMENT_KM } from './constants/starterDocument'
 import { calculateEditorStats, applyFormat } from './utils/markdownUtils'
 import { downloadMarkdownFile, copyToClipboard } from './utils/exportUtils'
 import { validateMarkdownFile, clearLocalDraft } from './utils/securityUtils'
-import type { ActiveTab } from './types'
+import type { ActiveTab, MobileTab } from './types'
 
 export function App() {
   const [theme, toggleTheme] = useTheme()
@@ -64,6 +66,15 @@ export function App() {
   const editorRef = useRef<EditorHandle>(null)
   const previewRef = useRef<PreviewHandle>(null)
 
+  // Responsive breakpoint: mobile / tablet single panel (< 768px)
+  const isMobile = useMediaQuery('(max-width: 767px)')
+  const [mobileTab, setMobileTab] = useState<MobileTab>('editor')
+
+  // Scroll & cursor preservation refs for tab switching
+  const lastEditorScrollTop = useRef<number>(0)
+  const lastEditorSelection = useRef<{ start: number; end: number }>({ start: 0, end: 0 })
+  const lastPreviewScrollTop = useRef<number>(0)
+
   // Status & UI States
   const [isSaving, setIsSaving] = useState<boolean>(false)
   const [isSyncScroll, setIsSyncScroll] = useState<boolean>(true)
@@ -74,6 +85,39 @@ export function App() {
   const [toastMessage, setToastMessage] = useState<string | null>(null)
   const [toastType, setToastType] = useState<'success' | 'error'>('success')
   const [cursorPos, setCursorPos] = useState<{ line: number; col: number }>({ line: 1, col: 1 })
+
+  // Handle switching mobile tabs without losing scroll or cursor position
+  const handleMobileTabChange = useCallback((tab: MobileTab) => {
+    if (tab === mobileTab) return
+
+    // 1. Capture current scroll and selection before tab switch
+    if (mobileTab === 'editor') {
+      if (editorRef.current) {
+        lastEditorScrollTop.current = editorRef.current.getScrollPosition()
+        lastEditorSelection.current = editorRef.current.getSelection()
+      }
+    } else {
+      if (previewRef.current) {
+        lastPreviewScrollTop.current = previewRef.current.getScrollTop()
+      }
+    }
+
+    setMobileTab(tab)
+
+    // 2. Restore scroll and selection in the next animation frame
+    requestAnimationFrame(() => {
+      if (tab === 'editor') {
+        if (editorRef.current) {
+          editorRef.current.setSelection(lastEditorSelection.current.start, lastEditorSelection.current.end)
+          editorRef.current.setScrollPosition(lastEditorScrollTop.current)
+        }
+      } else {
+        if (previewRef.current) {
+          previewRef.current.setScrollTop(lastPreviewScrollTop.current)
+        }
+      }
+    })
+  }, [mobileTab])
 
   // Trigger brief toast
   const showToast = useCallback((msg: string, type: 'success' | 'error' = 'success') => {
@@ -281,7 +325,7 @@ export function App() {
   const stats = calculateEditorStats(content, cursorPos.line, cursorPos.col)
 
   return (
-    <div className="flex h-screen w-screen flex-col overflow-hidden bg-[var(--app-bg)] text-[var(--text-primary)] font-sans">
+    <div className="flex h-screen h-dvh w-full max-w-[100vw] flex-col overflow-hidden bg-[var(--app-bg)] text-[var(--text-primary)] font-sans">
       {/* 1. Header (Hidden during Focus Mode to expand workspace) */}
       {!isFocusMode && (
         <Header
@@ -300,6 +344,7 @@ export function App() {
           onSecurityClick={() => setIsSecurityModalOpen(true)}
           onShortcutsClick={() => setIsShortcutsModalOpen(true)}
           onClearDraftClick={handleClearDraft}
+          isSaving={isSaving}
         />
       )}
 
@@ -310,30 +355,50 @@ export function App() {
         language={language}
       />
 
-      {/* 3. Formatting & Actions Toolbar */}
-      <Toolbar
-        language={language}
-        onFormat={handleFormat}
-        isSyncScroll={isSyncScroll}
-        onToggleSyncScroll={() => setIsSyncScroll(prev => !prev)}
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-        isFocusMode={isFocusMode}
-        onToggleFocusMode={() => setIsFocusMode(prev => !prev)}
-        splitRatio={splitRatio}
-        onResetLayout={handleResetLayout}
-      />
+      {/* 3. Mobile Workspace Tabs Switcher (Visible on mobile/tablet < 768px) */}
+      {!isFocusMode && isMobile && (
+        <MobileTabBar
+          mobileTab={mobileTab}
+          onTabChange={handleMobileTabChange}
+          language={language}
+          isSyncScroll={isSyncScroll}
+          onToggleSyncScroll={() => setIsSyncScroll(prev => !prev)}
+          isFocusMode={isFocusMode}
+          onToggleFocusMode={() => setIsFocusMode(prev => !prev)}
+        />
+      )}
 
-      {/* 4. Main Resizable Workspace */}
+      {/* 4. Formatting & Actions Toolbar (On mobile, only rendered when Editor tab is active) */}
+      {(!isMobile || mobileTab === 'editor') && (
+        <Toolbar
+          language={language}
+          onFormat={handleFormat}
+          isSyncScroll={isSyncScroll}
+          onToggleSyncScroll={() => setIsSyncScroll(prev => !prev)}
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          isFocusMode={isFocusMode}
+          onToggleFocusMode={() => setIsFocusMode(prev => !prev)}
+          splitRatio={splitRatio}
+          onResetLayout={handleResetLayout}
+        />
+      )}
+
+      {/* 5. Main Resizable Workspace */}
       <main className="flex-1 flex overflow-hidden relative">
-        {/* Editor Pane */}
+        {/* Editor Pane (Full width on mobile editor tab, or ratio-based on desktop) */}
         <section
           aria-label="Markdown Editor"
+          id="mobile-panel-editor"
           style={{
-            width: activeTab === 'split' ? `${splitRatio}%` : activeTab === 'editor' ? '100%' : '0%',
+            width: isMobile
+              ? (mobileTab === 'editor' ? '100%' : '0%')
+              : (activeTab === 'split' ? `${splitRatio}%` : activeTab === 'editor' ? '100%' : '0%'),
           }}
           className={`h-full border-r border-[var(--border)] transition-all ${
-            activeTab === 'preview' ? 'hidden' : 'flex flex-1 md:flex-none'
+            isMobile
+              ? (mobileTab === 'editor' ? 'flex flex-1 w-full' : 'hidden')
+              : (activeTab === 'preview' ? 'hidden' : 'flex flex-1 md:flex-none')
           }`}
         >
           <Editor
@@ -348,8 +413,8 @@ export function App() {
           />
         </section>
 
-        {/* Resizable Divider (Active only in split view on desktop) */}
-        {activeTab === 'split' && (
+        {/* Resizable Divider (Active only in desktop split view) */}
+        {!isMobile && activeTab === 'split' && (
           <ResizableDivider
             ratio={splitRatio}
             onRatioChange={handleRatioChange}
@@ -360,14 +425,19 @@ export function App() {
           />
         )}
 
-        {/* Preview Pane */}
+        {/* Preview Pane (Full width on mobile preview tab, or ratio-based on desktop) */}
         <section
           aria-label="Markdown Preview"
+          id="mobile-panel-preview"
           style={{
-            width: activeTab === 'split' ? `${100 - splitRatio}%` : activeTab === 'preview' ? '100%' : '0%',
+            width: isMobile
+              ? (mobileTab === 'preview' ? '100%' : '0%')
+              : (activeTab === 'split' ? `${100 - splitRatio}%` : activeTab === 'preview' ? '100%' : '0%'),
           }}
           className={`h-full overflow-hidden transition-all ${
-            activeTab === 'editor' ? 'hidden' : 'flex flex-1 md:flex-none'
+            isMobile
+              ? (mobileTab === 'preview' ? 'flex flex-1 w-full' : 'hidden')
+              : (activeTab === 'editor' ? 'hidden' : 'flex flex-1 md:flex-none')
           }`}
         >
           <Preview

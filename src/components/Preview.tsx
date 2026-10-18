@@ -12,6 +12,8 @@ import { getTranslation } from '../locales'
 export interface PreviewHandle {
   scrollToPercentage: (percentage: number) => void
   exportAsPng: (filename: string) => Promise<boolean>
+  getScrollTop: () => number
+  setScrollTop: (scrollTop: number) => void
 }
 
 interface PreviewProps {
@@ -72,6 +74,14 @@ export const Preview = forwardRef<PreviewHandle, PreviewProps>(({
         },
       })
     },
+    getScrollTop: () => {
+      return containerRef.current ? containerRef.current.scrollTop : 0
+    },
+    setScrollTop: (scrollTop: number) => {
+      if (containerRef.current) {
+        containerRef.current.scrollTop = scrollTop
+      }
+    },
   }))
 
   useEffect(() => {
@@ -113,9 +123,9 @@ export const Preview = forwardRef<PreviewHandle, PreviewProps>(({
     <div
       ref={containerRef}
       lang={language}
-      className={`h-full w-full overflow-y-auto px-5 py-6 sm:px-8 bg-[var(--preview-bg)] transition-colors selection:bg-[var(--accent-soft)]`}
+      className={`h-full w-full overflow-y-auto px-3.5 py-4 sm:px-8 bg-[var(--preview-bg)] transition-colors selection:bg-[var(--accent-soft)]`}
     >
-      <div className="w-full font-sans leading-relaxed text-[var(--text-primary)] break-words">
+      <div className="w-full font-sans leading-relaxed text-[var(--text-primary)] break-words [overflow-wrap:anywhere]">
         <Markdown
           remarkPlugins={[remarkGfm]}
           rehypePlugins={[
@@ -155,8 +165,8 @@ export const Preview = forwardRef<PreviewHandle, PreviewProps>(({
               <hr className="my-6 border-[var(--border)]" {...props} />
             ),
             table: ({ ...props }) => (
-              <div className="my-6 overflow-x-auto rounded-lg border border-[var(--border)]">
-                <table className="w-full text-left border-collapse text-sm" {...props} />
+              <div className="my-6 overflow-x-auto max-w-full rounded-lg border border-[var(--border)] [scrollbar-width:thin]">
+                <table className="min-w-full text-left border-collapse text-xs sm:text-sm" {...props} />
               </div>
             ),
             thead: ({ ...props }) => (
@@ -225,8 +235,8 @@ export const Preview = forwardRef<PreviewHandle, PreviewProps>(({
                 )
               }
               return (
-                <div className="my-4 overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--surface-secondary)] text-[var(--text-primary)] shadow-2xs">
-                  <pre className="p-4 overflow-x-auto text-[13px] font-mono leading-relaxed bg-transparent">
+                <div className="my-4 max-w-full overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--surface-secondary)] text-[var(--text-primary)] shadow-2xs">
+                  <pre className="p-3 sm:p-4 overflow-x-auto max-w-full text-xs sm:text-[13px] font-mono leading-relaxed bg-transparent [scrollbar-width:thin]">
                     <code className={className} {...props}>
                       {children}
                     </code>
