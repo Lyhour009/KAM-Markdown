@@ -1,10 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react'
-import mermaid from 'mermaid'
-import DOMPurify from 'dompurify'
 import { AlertTriangle, Copy, Check, ChevronDown, ChevronUp, Loader2 } from 'lucide-react'
 import type { Theme, Language } from '../types'
 import { getTranslation } from '../locales'
 import { copyToClipboard } from '../utils/exportUtils'
+import {
+  generateUniqueDiagramId,
+  renderMermaidDiagramSafe,
+  cleanMermaidErrorMessage,
+} from '../utils/mermaidUtils'
 
 interface MermaidDiagramProps {
   code: string
@@ -12,100 +15,66 @@ interface MermaidDiagramProps {
   language: Language
 }
 
-let diagramCounter = 0
-function generateDiagramId(): string {
-  diagramCounter += 1
-  return `mermaid-diagram-${Date.now().toString(36)}-${diagramCounter}`
-}
-
 export const MermaidDiagram: React.FC<MermaidDiagramProps> = ({
   code,
   theme,
   language,
 }) => {
-  const [svg, setSvg] = useState<string>('')
-  const [error, setError] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState<boolean>(true)
+  const trimmed = code ? code.trim() : ''
+  const [renderResult, setRenderResult] = useState<{
+    code: string
+    theme: Theme
+    svg: string
+    error: string | null
+  }>({
+    code: '',
+    theme,
+    svg: '',
+    error: null,
+  })
+
   const [showSource, setShowSource] = useState<boolean>(false)
   const [copied, setCopied] = useState<boolean>(false)
-  
-  const renderIndexRef = useRef<number>(0)
+
+  // Stable instance ID per component mount, refreshed per render pass
+  const renderSeqRef = useRef<number>(0)
   const t = (key: any) => getTranslation(language, key)
 
+  const isCurrent = renderResult.code === trimmed && renderResult.theme === theme
+  const isLoading = Boolean(trimmed && !isCurrent)
+  const svg = isCurrent ? renderResult.svg : ''
+  const error = isCurrent ? renderResult.error : null
+
   useEffect(() => {
-    const trimmedCode = code.trim()
-    if (!trimmedCode) return
+    if (!trimmed) return
 
-    const currentRender = ++renderIndexRef.current
+    const currentSeq = ++renderSeqRef.current
+    const renderId = generateUniqueDiagramId()
 
-    // Configure Mermaid with strict security and current theme tokens
-    mermaid.initialize({
-      startOnLoad: false,
-      securityLevel: 'strict',
-      theme: theme === 'dark' ? 'dark' : 'neutral',
-      themeVariables: theme === 'dark' ? {
-        darkMode: true,
-        background: '#201F1D',
-        mainBkg: '#282623',
-        primaryColor: '#302B4B',
-        primaryTextColor: '#F0EFEA',
-        primaryBorderColor: '#958BFF',
-        lineColor: '#AAA79F',
-        secondaryColor: '#242831',
-        tertiaryColor: '#201F1D',
-        fontFamily: "'Kantumruy Pro', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
-      } : {
-        darkMode: false,
-        background: '#FFFFFF',
-        mainBkg: '#F6F5F1',
-        primaryColor: '#EFEDFF',
-        primaryTextColor: '#252522',
-        primaryBorderColor: '#5B4BC4',
-        lineColor: '#706F68',
-        secondaryColor: '#FCFCFA',
-        tertiaryColor: '#FFFFFF',
-        fontFamily: "'Kantumruy Pro', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
-      },
-      fontFamily: "'Kantumruy Pro', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
-      suppressErrorRendering: true,
-    })
+    renderMermaidDiagramSafe(renderId, trimmed, theme)
+      .then((cleanSvg) => {
+        // Prevent stale async renders from replacing newer edits
+        if (renderSeqRef.current !== currentSeq) return
 
-    const diagramId = generateDiagramId()
-
-    // Render asynchronously with race-condition protection
-    mermaid.render(diagramId, trimmedCode)
-      .then(({ svg: rawSvg }) => {
-        if (renderIndexRef.current !== currentRender) return
-
-        // Sanitize generated SVG with DOMPurify
-        const cleanSvg = DOMPurify.sanitize(rawSvg, {
-          USE_PROFILES: { svg: true, svgFilters: true },
-          ADD_TAGS: ['use', 'symbol', 'defs'],
-          ADD_ATTR: ['target', 'transform-origin'],
+        setRenderResult({
+          code: trimmed,
+          theme,
+          svg: cleanSvg,
+          error: null,
         })
-
-        setSvg(cleanSvg)
-        setError(null)
-        setIsLoading(false)
       })
       .catch((err: any) => {
-        if (renderIndexRef.current !== currentRender) return
+        if (renderSeqRef.current !== currentSeq) return
 
-        // Clean up any residual error DOM elements inserted by Mermaid
-        const residualEl = document.getElementById(diagramId) || document.getElementById(`d${diagramId}`)
-        if (residualEl) {
-          residualEl.remove()
-        }
-
-        const rawMessage = err?.message || String(err)
-        // Clean up syntax error messages for better user experience
-        const cleanMessage = rawMessage.replace(/Parse error on line \d+:/, '').trim()
-
-        setError(cleanMessage || getTranslation(language, 'mermaidErrorHint'))
-        setSvg('')
-        setIsLoading(false)
+        const friendlyMsg = cleanMermaidErrorMessage(err?.message || String(err))
+        setRenderResult({
+          code: trimmed,
+          theme,
+          svg: '',
+          error: friendlyMsg || getTranslation(language, 'mermaidErrorHint'),
+        })
       })
-  }, [code, theme, language])
+  }, [trimmed, theme, language])
 
   const handleCopyCode = async () => {
     const success = await copyToClipboard(code)
@@ -115,7 +84,7 @@ export const MermaidDiagram: React.FC<MermaidDiagramProps> = ({
     }
   }
 
-  // 1. Error State
+  // 1. Error State: Visible, helpful fallback; never crashes preview
   if (error) {
     return (
       <div className="my-6 max-w-full rounded-lg border border-[var(--danger)]/30 bg-[var(--danger)]/5 p-4 text-sm font-sans transition-colors">
@@ -165,7 +134,7 @@ export const MermaidDiagram: React.FC<MermaidDiagramProps> = ({
     )
   }
 
-  // 2. Loading State (subtle pulse when rendering)
+  // 2. Loading State: Subtle spinner only while actively generating
   if (isLoading && !svg) {
     return (
       <div className="my-6 max-w-full rounded-lg border border-[var(--border)] bg-[var(--surface)] p-6 flex flex-col items-center justify-center gap-2 text-xs text-[var(--text-secondary)]">
@@ -175,7 +144,12 @@ export const MermaidDiagram: React.FC<MermaidDiagramProps> = ({
     )
   }
 
-  // 3. Successful Rendered Diagram
+  // Empty code state
+  if (!svg) {
+    return null
+  }
+
+  // 3. Successful Rendered Diagram: Responsive, horizontally scrollable, scaled correctly
   return (
     <div
       className="my-6 max-w-full overflow-x-auto rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4 sm:p-6 flex justify-center items-center shadow-2xs [scrollbar-width:thin] transition-colors [&>svg]:max-w-full [&>svg]:h-auto [&>svg]:block font-sans"
