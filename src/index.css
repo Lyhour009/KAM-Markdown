@@ -1,0 +1,242 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: 'Kantumruy Pro', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'Noto Sans Khmer', monospace;
+  --font-khmer: 'Kantumruy Pro', 'Noto Sans Khmer', sans-serif;
+}
+
+@layer base {
+  :root {
+    color-scheme: light dark;
+
+    /* Light Theme (Writer's Workshop Palette) */
+    --app-bg: #F6F5F1;
+    --surface: #FFFFFF;
+    --surface-secondary: #F6F5F1;
+    --surface-hover: #EBE9E1;
+    --editor-bg: #FCFCFA;
+    --preview-bg: #FFFFFF;
+    --text-primary: #252522;
+    --text-secondary: #706F68;
+    --text-muted: #939189;
+    --border: #E4E2DB;
+    --border-subtle: #ECEAE3;
+    --accent: #5B4BC4;
+    --accent-hover: #4939AE;
+    --accent-soft: #EFEDFF;
+    --success: #18794E;
+    --danger: #B93838;
+    --focus-ring: rgba(91, 75, 196, 0.35);
+    --selection-bg: rgba(91, 75, 196, 0.16);
+  }
+
+  .dark {
+    /* Dark Theme (Writer's Workshop Palette) */
+    --app-bg: #171615;
+    --surface: #201F1D;
+    --surface-secondary: #282623;
+    --surface-hover: #32302C;
+    --editor-bg: #242831;
+    --preview-bg: #1B1A18;
+    --text-primary: #F0EFEA;
+    --text-secondary: #AAA79F;
+    --text-muted: #7D7971;
+    --border: #373531;
+    --border-subtle: #262422;
+    --accent: #958BFF;
+    --accent-hover: #B0A8FF;
+    --accent-soft: #302B4B;
+    --success: #4CCB91;
+    --danger: #FF7777;
+    --focus-ring: rgba(149, 139, 255, 0.35);
+    --selection-bg: rgba(149, 139, 255, 0.28);
+  }
+  
+  html {
+    font-family: var(--font-sans);
+    line-height: 1.7; /* Crucial for Khmer vowel and subscript height */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-color: var(--app-bg);
+    color: var(--text-primary);
+  }
+
+  /* Khmer line wrapping and line height */
+  [lang="km"], .font-khmer {
+    line-height: 1.75;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    letter-spacing: 0.01em;
+  }
+}
+
+/* Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--border);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--text-muted);
+}
+
+/* CodeMirror Editor Styling */
+.cm-editor {
+  height: 100% !important;
+  font-family: var(--font-mono) !important;
+  font-size: 14px !important;
+  line-height: 1.75 !important;
+  background-color: var(--editor-bg) !important;
+  color: var(--text-primary) !important;
+}
+
+.cm-scroller {
+  font-family: var(--font-mono) !important;
+}
+
+.cm-focused {
+  outline: none !important;
+}
+
+.cm-gutters {
+  border-right: 1px solid var(--border) !important;
+  background-color: var(--editor-bg) !important;
+  color: var(--text-secondary) !important;
+}
+
+.dark .cm-gutters {
+  border-right: 1px solid var(--border) !important;
+  background-color: var(--editor-bg) !important;
+  color: var(--text-secondary) !important;
+}
+
+.cm-activeLineGutter {
+  color: var(--text-primary) !important;
+  background-color: var(--surface-hover) !important;
+  font-weight: 600 !important;
+}
+
+.dark .cm-activeLineGutter {
+  background-color: rgba(68, 64, 60, 0.45) !important;
+}
+
+.cm-activeLine {
+  background-color: var(--surface-secondary) !important;
+}
+
+.dark .cm-activeLine {
+  background-color: rgba(40, 38, 35, 0.5) !important;
+}
+
+/* Syntax Highlighting for Code Blocks in Preview (Light & Dark) */
+/* --- Light Theme Syntax Highlighting --- */
+.hljs {
+  color: #252522;
+  background: transparent;
+}
+
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-built_in,
+.hljs-name,
+.hljs-tag {
+  color: #5B4BC4; /* Brand accent */
+  font-weight: 500;
+}
+
+.hljs-string,
+.hljs-title,
+.hljs-section,
+.hljs-attribute,
+.hljs-literal,
+.hljs-template-tag,
+.hljs-template-variable,
+.hljs-type,
+.hljs-addition {
+  color: #18794E; /* Forest emerald */
+}
+
+.hljs-comment,
+.hljs-quote,
+.hljs-deletion,
+.hljs-meta {
+  color: #706F68; /* Editorial slate */
+  font-style: italic;
+}
+
+.hljs-number,
+.hljs-regexp,
+.hljs-link {
+  color: #B25E1A; /* Warm amber/terracotta */
+}
+
+.hljs-variable,
+.hljs-params {
+  color: #1A7091; /* Slate cyan */
+}
+
+.hljs-function {
+  color: #3859BC; /* Steel blue */
+}
+
+/* --- Dark Theme Syntax Highlighting --- */
+.dark .hljs {
+  color: #F0EFEA;
+  background: transparent;
+}
+
+.dark .hljs-keyword,
+.dark .hljs-selector-tag,
+.dark .hljs-built_in,
+.dark .hljs-name,
+.dark .hljs-tag {
+  color: #958BFF; /* Light brand accent */
+  font-weight: 500;
+}
+
+.dark .hljs-string,
+.dark .hljs-title,
+.dark .hljs-section,
+.dark .hljs-attribute,
+.dark .hljs-literal,
+.dark .hljs-template-tag,
+.dark .hljs-template-variable,
+.dark .hljs-type,
+.dark .hljs-addition {
+  color: #4CCB91; /* Soft green */
+}
+
+.dark .hljs-comment,
+.dark .hljs-quote,
+.dark .hljs-deletion,
+.dark .hljs-meta {
+  color: #AAA79F;
+  font-style: italic;
+}
+
+.dark .hljs-number,
+.dark .hljs-regexp,
+.dark .hljs-link {
+  color: #FFAE73;
+}
+
+.dark .hljs-variable,
+.dark .hljs-params {
+  color: #7AD1EB;
+}
+
+.dark .hljs-function {
+  color: #8CA6F7;
+}
