@@ -42,7 +42,7 @@ export const MermaidDiagram: React.FC<MermaidDiagramProps> = ({
 
   const isCurrent = renderResult.code === trimmed && renderResult.theme === theme
   const isLoading = Boolean(trimmed && !isCurrent)
-  const svg = isCurrent ? renderResult.svg : ''
+  const svg = isCurrent ? renderResult.svg : (renderResult.svg || '')
   const error = isCurrent ? renderResult.error : null
 
   useEffect(() => {
@@ -152,7 +152,7 @@ export const MermaidDiagram: React.FC<MermaidDiagramProps> = ({
   // 3. Successful Rendered Diagram: Responsive, horizontally scrollable, scaled correctly
   return (
     <div
-      className="my-6 max-w-full overflow-x-auto rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4 sm:p-6 flex justify-center items-center shadow-2xs [scrollbar-width:thin] transition-colors [&>svg]:max-w-full [&>svg]:h-auto [&>svg]:block font-sans"
+      className={`my-6 max-w-full overflow-x-auto rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4 sm:p-6 flex justify-center items-center shadow-2xs [scrollbar-width:thin] transition-all [&>svg]:max-w-full [&>svg]:h-auto [&>svg]:block font-sans ${isLoading ? 'opacity-70' : 'opacity-100'}`}
       dangerouslySetInnerHTML={{ __html: svg }}
     />
   )

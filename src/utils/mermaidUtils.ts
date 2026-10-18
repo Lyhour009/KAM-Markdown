@@ -40,11 +40,15 @@ export function ensureMermaidInitialized(theme: Theme): void {
       tertiaryColor: '#FFFFFF',
       fontFamily: "'Kantumruy Pro', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
     },
+    htmlLabels: false,
     flowchart: {
       htmlLabels: false,
       useMaxWidth: true,
     },
     sequence: {
+      useMaxWidth: true,
+    },
+    er: {
       useMaxWidth: true,
     },
     fontFamily: "'Kantumruy Pro', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
@@ -108,8 +112,10 @@ export function cleanMermaidErrorMessage(rawMessage: string): string {
   if (!rawMessage) return 'Syntax error in Mermaid diagram'
   return rawMessage
     .replace(/^Error:\s*/i, '')
-    .replace(/Parse error on line \d+:/i, '')
-    .replace(/Lexical error on line \d+:/i, '')
+    .replace(/Parse error on line \d+:\s*/i, '')
+    .replace(/Lexical error on line \d+:\s*/i, '')
+    .replace(/Error: Diagram syntax error in [^:]+:\s*/i, '')
     .split('\n')[0]
     .trim() || 'Invalid diagram syntax'
 }
+
