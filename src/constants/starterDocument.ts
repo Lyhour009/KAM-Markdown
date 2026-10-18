@@ -60,6 +60,18 @@ console.log(\`Ready: \${welcomeNote.title}\`);
 
 ---
 
+## 📐 Architecture Diagram (Mermaid)
+
+\`\`\`mermaid
+flowchart LR
+    User[User] --> Editor[Markdown Editor]
+    Editor --> Markdown[Markdown Source]
+    Markdown --> Preview[Live Preview]
+    Preview --> Export[Download Document]
+\`\`\`
+
+---
+
 ## 🔗 Quick Actions to Try
 1. Try editing any text on the left pane.
 2. Click **Download .md** to save this file locally to your machine.
@@ -113,6 +125,17 @@ function greetKhmer(name) {
 }
 
 console.log(greetKhmer("មិត្តអ្នកអាន"));
+\`\`\`
+
+---
+
+## 📐 គំរូដ្យាក្រាមរចនាសម្ព័ន្ធ (Mermaid)
+
+\`\`\`mermaid
+flowchart LR
+    User[អ្នកប្រើប្រាស់] --> Editor[កន្លែងសរសេរ]
+    Editor --> LivePreview[ការមើលផ្ទាល់]
+    LivePreview --> Output[ទាញយកឯកសារ]
 \`\`\`
 
 ---

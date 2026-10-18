@@ -87,7 +87,15 @@ export const en = {
   clearDraftConfirm: 'Clear Draft',
   privacyTitle: 'Local Privacy & Security',
   securityNotice: 'Markdown is sanitized client-side. Scripts and unsafe protocols are strictly blocked. No data ever leaves your device.',
-  privacyNote: 'Your draft is stored safely in this browser’s local storage. Download the Markdown file to keep an offline backup.'
+  privacyNote: 'Your draft is stored safely in this browser’s local storage. Download the Markdown file to keep an offline backup.',
+
+  // Mermaid Diagrams
+  mermaidError: 'Diagram Syntax Error',
+  mermaidErrorHint: 'Could not render diagram. Please verify your Mermaid syntax.',
+  showSource: 'Show Source',
+  hideSource: 'Hide Source',
+  copySource: 'Copy Source',
+  renderingDiagram: 'Rendering diagram...',
 }
 
 export type TranslationKey = keyof typeof en

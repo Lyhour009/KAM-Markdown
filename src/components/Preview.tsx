@@ -8,6 +8,17 @@ import type { Language, Theme } from '../types'
 import { isSafeUrl } from '../utils/securityUtils'
 import { exportElementAsPng } from '../utils/exportUtils'
 import { getTranslation } from '../locales'
+import { MermaidDiagram } from './MermaidDiagram'
+
+function extractRawText(node: any): string {
+  if (typeof node === 'string') return node
+  if (typeof node === 'number') return String(node)
+  if (Array.isArray(node)) return node.map(extractRawText).join('')
+  if (node && typeof node === 'object' && node.props && node.props.children) {
+    return extractRawText(node.props.children)
+  }
+  return ''
+}
 
 export interface PreviewHandle {
   scrollToPercentage: (percentage: number) => void
@@ -37,6 +48,7 @@ const sanitizeSchema = {
 
 export const Preview = forwardRef<PreviewHandle, PreviewProps>(({
   content,
+  theme,
   language,
   onScroll,
   isSyncScroll,
@@ -223,7 +235,20 @@ export const Preview = forwardRef<PreviewHandle, PreviewProps>(({
             },
             code: ({ className, children, ...props }: any) => {
               const match = /language-(\w+)/.exec(className || '')
+              const lang = match ? match[1].toLowerCase() : ''
               const isInline = !match && !String(children).includes('\n')
+
+              if (!isInline && lang === 'mermaid') {
+                const rawCode = extractRawText(children).trim()
+                return (
+                  <MermaidDiagram
+                    code={rawCode}
+                    theme={theme}
+                    language={language}
+                  />
+                )
+              }
+
               if (isInline) {
                 return (
                   <code

@@ -10,7 +10,7 @@ export default defineConfig({
     tailwindcss(),
   ],
   build: {
-    chunkSizeWarningLimit: 1200,
+    chunkSizeWarningLimit: 5000,
     rollupOptions: {
       output: {
         manualChunks(id: string) {
@@ -19,6 +19,9 @@ export default defineConfig({
           }
           if (id.includes('node_modules/react-markdown') || id.includes('node_modules/remark') || id.includes('node_modules/rehype') || id.includes('node_modules/highlight.js')) {
             return 'markdown-render'
+          }
+          if (id.includes('node_modules/mermaid') || id.includes('node_modules/dompurify')) {
+            return 'mermaid-render'
           }
         },
       },
