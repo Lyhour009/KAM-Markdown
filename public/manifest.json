@@ -1,0 +1,17 @@
+{
+  "name": "KAM-Markdown — Online Markdown Editor",
+  "short_name": "KAM-Markdown",
+  "description": "A calm, high-performance Markdown editor with real-time live preview, Khmer & English typography, and PNG export.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F6F5F1",
+  "theme_color": "#5B4BC4",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
