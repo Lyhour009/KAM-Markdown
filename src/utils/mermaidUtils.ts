@@ -6,6 +6,49 @@ let isInitialized = false
 let currentTheme: Theme | null = null
 
 /**
+ * Normalizes and repairs common Mermaid syntax issues before rendering (e.g., ERD relationship labels).
+ */
+export function normalizeMermaidCode(rawCode: string): string {
+  if (!rawCode) return ''
+
+  // 1. Remove non-printable zero-width Unicode characters that may be introduced during copy-paste
+  let cleaned = rawCode.replace(/[\u200B-\u200D\uFEFF]/g, '').trim()
+
+  const lines = cleaned.split(/\r?\n/)
+  const firstLine = lines[0] ? lines[0].trim() : ''
+
+  // 2. ER Diagram specific normalization
+  if (/^erDiagram/i.test(firstLine)) {
+    cleaned = lines.map((line) => {
+      // Check for relationship lines where relationship label has spaces, parentheses, slashes, or dashes
+      // e.g. USERS ||--o{ RESERVATIONS : makes (guest_id)
+      const relMatch = line.match(/^(\s*\w+\s*(?:\|\||\|o|\}\||\}o|--|\.\.)[^\n:]*:\s*)([^"\r\n]+)$/)
+      if (relMatch) {
+        const prefix = relMatch[1]
+        const label = relMatch[2].trim()
+        if (/[\s()\-/,]/.test(label) && !label.startsWith('"') && !label.endsWith('"')) {
+          return `${prefix}"${label}"`
+        }
+      }
+      return line
+    }).join('\n')
+  }
+
+  return cleaned
+}
+
+/**
+ * Detects the diagram type for UI labeling and responsive behavior.
+ */
+export function detectDiagramType(code: string): 'erd' | 'flowchart' | 'sequence' | 'diagram' {
+  const trimmed = code.trim().toLowerCase()
+  if (trimmed.startsWith('erdiagram')) return 'erd'
+  if (trimmed.startsWith('flowchart') || trimmed.startsWith('graph')) return 'flowchart'
+  if (trimmed.startsWith('sequencediagram')) return 'sequence'
+  return 'diagram'
+}
+
+/**
  * Initializes Mermaid configuration once. Re-initializes only when the application theme changes.
  */
 export function ensureMermaidInitialized(theme: Theme): void {
@@ -22,23 +65,41 @@ export function ensureMermaidInitialized(theme: Theme): void {
       background: '#201F1D',
       mainBkg: '#282623',
       primaryColor: '#302B4B',
-      primaryTextColor: '#F0EFEA',
+      primaryTextColor: '#F4F4F5',
       primaryBorderColor: '#958BFF',
-      lineColor: '#AAA79F',
+      lineColor: '#A1A1AA',
       secondaryColor: '#242831',
       tertiaryColor: '#201F1D',
       fontFamily: "'Kantumruy Pro', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+      // ERD specific theme overrides for Dark Mode
+      attributeBackgroundColorOdd: '#242831',
+      attributeBackgroundColorEven: '#1B1A18',
+      entityBorder: '#4B5563',
+      entityBkg: '#282623',
+      entityTextColor: '#F4F4F5',
+      relationshipLineColor: '#A1A1AA',
+      relationshipLabelColor: '#F4F4F5',
+      relationshipLabelBackground: '#201F1D',
     } : {
       darkMode: false,
       background: '#FFFFFF',
       mainBkg: '#F6F5F1',
       primaryColor: '#EFEDFF',
-      primaryTextColor: '#252522',
+      primaryTextColor: '#18181B',
       primaryBorderColor: '#5B4BC4',
-      lineColor: '#706F68',
+      lineColor: '#52525B',
       secondaryColor: '#FCFCFA',
       tertiaryColor: '#FFFFFF',
       fontFamily: "'Kantumruy Pro', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+      // ERD specific theme overrides for Light Mode
+      attributeBackgroundColorOdd: '#FFFFFF',
+      attributeBackgroundColorEven: '#F8F9FA',
+      entityBorder: '#D1D5DB',
+      entityBkg: '#F3F4F6',
+      entityTextColor: '#18181B',
+      relationshipLineColor: '#52525B',
+      relationshipLabelColor: '#18181B',
+      relationshipLabelBackground: '#FFFFFF',
     },
     htmlLabels: false,
     flowchart: {
@@ -49,7 +110,7 @@ export function ensureMermaidInitialized(theme: Theme): void {
       useMaxWidth: true,
     },
     er: {
-      useMaxWidth: true,
+      useMaxWidth: false,
     },
     fontFamily: "'Kantumruy Pro', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
     suppressErrorRendering: true,
@@ -73,18 +134,25 @@ let renderQueue: Promise<any> = Promise.resolve()
  */
 export function renderMermaidDiagramSafe(id: string, code: string, theme: Theme): Promise<string> {
   ensureMermaidInitialized(theme)
+  const normalizedCode = normalizeMermaidCode(code)
 
   return new Promise<string>((resolve, reject) => {
     renderQueue = renderQueue
       .then(async () => {
         try {
-          const { svg: rawSvg } = await mermaid.render(id, code)
+          const { svg: rawSvg } = await mermaid.render(id, normalizedCode)
 
-          // Sanitize generated SVG with DOMPurify
+          // Sanitize generated SVG with DOMPurify, preserving all required ERD and diagram structures
           const cleanSvg = DOMPurify.sanitize(rawSvg, {
             USE_PROFILES: { svg: true, svgFilters: true },
             ADD_TAGS: ['use', 'symbol', 'defs', 'style'],
-            ADD_ATTR: ['target', 'transform-origin', 'dominant-baseline', 'text-anchor'],
+            ADD_ATTR: [
+              'target',
+              'transform-origin',
+              'dominant-baseline',
+              'text-anchor',
+              'preserveAspectRatio',
+            ],
           })
 
           resolve(cleanSvg)
@@ -118,4 +186,3 @@ export function cleanMermaidErrorMessage(rawMessage: string): string {
     .split('\n')[0]
     .trim() || 'Invalid diagram syntax'
 }
-

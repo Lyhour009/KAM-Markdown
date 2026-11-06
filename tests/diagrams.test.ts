@@ -1,6 +1,23 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
+import { JSDOM } from 'jsdom'
+import DOMPurify from 'dompurify'
+
+const dom = new JSDOM('<!DOCTYPE html><html><body><div id="root"></div></body></html>', {
+  pretendToBeVisual: true,
+})
+Object.defineProperty(globalThis, 'window', { value: dom.window, writable: true, configurable: true })
+Object.defineProperty(globalThis, 'document', { value: dom.window.document, writable: true, configurable: true })
+Object.defineProperty(globalThis, 'Element', { value: dom.window.Element, writable: true, configurable: true })
+Object.defineProperty(globalThis, 'SVGElement', { value: dom.window.SVGElement, writable: true, configurable: true })
+Object.defineProperty(globalThis, 'CSSStyleSheet', { value: dom.window.CSSStyleSheet, writable: true, configurable: true })
+Object.defineProperty(globalThis, 'XMLSerializer', { value: dom.window.XMLSerializer, writable: true, configurable: true })
+
+const purifyInstance = (DOMPurify as any)(dom.window)
+;(dom.window as any).DOMPurify = purifyInstance
+;(globalThis as any).DOMPurify = purifyInstance
+;(DOMPurify as any).sanitize = purifyInstance.sanitize.bind(purifyInstance)
 
 test('Mermaid: verify project defense diagrams syntax in Untitled (1).md', () => {
   const filePath = 'c:\\Users\\ASUS\\Downloads\\Untitled (1).md'
@@ -49,20 +66,8 @@ test('Mermaid: render all 3 diagrams with Mermaid library', async () => {
   const filePath = 'c:\\Users\\ASUS\\Downloads\\Untitled (1).md'
   if (!fs.existsSync(filePath)) return
 
-  const { JSDOM } = await import('jsdom')
-  const dom = new JSDOM('<!DOCTYPE html><html><body><div id="root"></div></body></html>', {
-    pretendToBeVisual: true,
-  })
-  Object.defineProperty(globalThis, 'window', { value: dom.window, writable: true, configurable: true })
-  Object.defineProperty(globalThis, 'document', { value: dom.window.document, writable: true, configurable: true })
-  Object.defineProperty(globalThis, 'Element', { value: dom.window.Element, writable: true, configurable: true })
-  Object.defineProperty(globalThis, 'SVGElement', { value: dom.window.SVGElement, writable: true, configurable: true })
-  Object.defineProperty(globalThis, 'CSSStyleSheet', { value: dom.window.CSSStyleSheet, writable: true, configurable: true })
-  Object.defineProperty(globalThis, 'XMLSerializer', { value: dom.window.XMLSerializer, writable: true, configurable: true })
-
-
-
   const mermaid = (await import('mermaid')).default
+  const { normalizeMermaidCode } = await import('../src/utils/mermaidUtils.ts')
   mermaid.initialize({
     startOnLoad: false,
     securityLevel: 'strict',
@@ -76,9 +81,28 @@ test('Mermaid: render all 3 diagrams with Mermaid library', async () => {
   let index = 0
   while ((match = regex.exec(content)) !== null) {
     index++
-    const code = match[1].trim()
+    const code = normalizeMermaidCode(match[1].trim())
     const valid = await mermaid.parse(code)
     assert.ok(valid, `Diagram ${index} syntax must be valid for Mermaid`)
   }
 })
 
+test('Mermaid: normalizeMermaidCode repairs unquoted ERD relationship labels and strips zero-width chars', async () => {
+  const { normalizeMermaidCode, detectDiagramType } = await import('../src/utils/mermaidUtils.ts')
+
+  // Unquoted parens in relationship line
+  const brokenErd = `erDiagram\n  USERS ||--o{ RESERVATIONS : makes (guest_id)\n  USERS {\n    int id PK\n  }`
+  const normalized = normalizeMermaidCode(brokenErd)
+  assert.ok(normalized.includes('"makes (guest_id)"'), 'Should wrap unquoted relationship label with parens in double quotes')
+
+  // Zero-width space removal
+  const zeroWidthErd = `erDiagram\u200B\n  USERS {\n    int id PK\n  }`
+  const cleaned = normalizeMermaidCode(zeroWidthErd)
+  assert.equal(cleaned.includes('\u200B'), false, 'Zero-width space must be stripped')
+
+  // Diagram type detection
+  assert.equal(detectDiagramType('erDiagram\n  USERS'), 'erd')
+  assert.equal(detectDiagramType('flowchart LR\n  A --> B'), 'flowchart')
+  assert.equal(detectDiagramType('graph TD\n  A --> B'), 'flowchart')
+  assert.equal(detectDiagramType('sequenceDiagram\n  Alice->>Bob: Hello'), 'sequence')
+})

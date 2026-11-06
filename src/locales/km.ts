@@ -98,5 +98,15 @@ export const km: Record<TranslationKey, string> = {
   hideSource: 'លាក់កូដដើម',
   copySource: 'ចម្លងកូដ',
   renderingDiagram: 'កំពុងដំណើរការដ្យាក្រាម...',
+  zoomIn: 'ពង្រីក (Zoom In)',
+  zoomOut: 'បង្រួម (Zoom Out)',
+  resetZoom: 'ទំហំដើម (100%)',
+  fitToWidth: 'ពង្រីកពេញទទឹង (Fit)',
+  fullscreen: 'បង្ហាញពេញអេក្រង់',
+  exitFullscreen: 'ចាកចេញពីអេក្រង់ពេញ (Esc)',
+  erdDiagram: 'ដ្យាក្រាមទិន្នន័យ (ERD)',
+  flowchartDiagram: 'ដ្យាក្រាមលំហូរ (Flowchart)',
+  sequenceDiagram: 'ដ្យាក្រាមលំដាប់ (Sequence)',
+  diagram: 'ដ្យាក្រាម',
 }
 

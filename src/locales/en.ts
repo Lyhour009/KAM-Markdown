@@ -96,6 +96,16 @@ export const en = {
   hideSource: 'Hide Source',
   copySource: 'Copy Source',
   renderingDiagram: 'Rendering diagram...',
+  zoomIn: 'Zoom In',
+  zoomOut: 'Zoom Out',
+  resetZoom: 'Reset (100%)',
+  fitToWidth: 'Fit to Width',
+  fullscreen: 'Fullscreen View',
+  exitFullscreen: 'Exit Fullscreen (Esc)',
+  erdDiagram: 'Entity Relationship (ERD)',
+  flowchartDiagram: 'Flowchart',
+  sequenceDiagram: 'Sequence Diagram',
+  diagram: 'Diagram',
 }
 
 export type TranslationKey = keyof typeof en

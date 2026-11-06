@@ -12,16 +12,16 @@
   :root {
     color-scheme: light dark;
 
-    /* Light Theme (Writer's Workshop Palette) */
+    /* Light Theme (Writer's Workshop Palette - Refined Contrast) */
     --app-bg: #F6F5F1;
     --surface: #FFFFFF;
     --surface-secondary: #F6F5F1;
     --surface-hover: #EBE9E1;
     --editor-bg: #FCFCFA;
     --preview-bg: #FFFFFF;
-    --text-primary: #252522;
-    --text-secondary: #706F68;
-    --text-muted: #939189;
+    --text-primary: #18181B; /* Crisp, high-contrast dark charcoal */
+    --text-secondary: #52525B; /* Readable neutral secondary (no dull slate) */
+    --text-muted: #71717A;
     --border: #E4E2DB;
     --border-subtle: #ECEAE3;
     --accent: #5B4BC4;
@@ -34,16 +34,16 @@
   }
 
   .dark {
-    /* Dark Theme (Writer's Workshop Palette) */
+    /* Dark Theme (Writer's Workshop Palette - Refined Contrast) */
     --app-bg: #171615;
     --surface: #201F1D;
     --surface-secondary: #282623;
     --surface-hover: #32302C;
     --editor-bg: #242831;
     --preview-bg: #1B1A18;
-    --text-primary: #F0EFEA;
-    --text-secondary: #AAA79F;
-    --text-muted: #7D7971;
+    --text-primary: #F4F4F5; /* Crisp, readable bright neutral */
+    --text-secondary: #A1A1AA; /* Clear secondary */
+    --text-muted: #71717A;
     --border: #373531;
     --border-subtle: #262422;
     --accent: #958BFF;

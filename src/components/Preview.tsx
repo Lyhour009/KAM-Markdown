@@ -147,48 +147,66 @@ export const Preview = forwardRef<PreviewHandle, PreviewProps>(({
           urlTransform={(url) => (isSafeUrl(url) ? url : '')}
           components={{
             h1: ({ ...props }) => (
-              <h1 className="text-3xl font-bold tracking-tight text-[var(--text-primary)] mt-8 mb-4 pb-2 border-b border-[var(--border)]" {...props} />
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[var(--text-primary)] mt-8 mb-4 pb-2 border-b border-[var(--border)]" {...props} />
             ),
             h2: ({ ...props }) => (
-              <h2 className="text-2xl font-bold tracking-tight text-[var(--text-primary)] mt-6 mb-3 pb-1 border-b border-[var(--border-subtle)]" {...props} />
+              <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[var(--text-primary)] mt-6 mb-3 pb-1 border-b border-[var(--border-subtle)]" {...props} />
             ),
             h3: ({ ...props }) => (
-              <h3 className="text-xl font-semibold text-[var(--text-primary)] mt-5 mb-2" {...props} />
+              <h3 className="text-lg sm:text-xl font-semibold text-[var(--text-primary)] mt-5 mb-2" {...props} />
             ),
             h4: ({ ...props }) => (
-              <h4 className="text-lg font-semibold text-[var(--text-primary)] mt-4 mb-2" {...props} />
+              <h4 className="text-base sm:text-lg font-semibold text-[var(--text-primary)] mt-4 mb-2" {...props} />
             ),
             p: ({ ...props }) => (
-              <p className="my-3 leading-7 text-[var(--text-secondary)]" {...props} />
+              <p className="my-3.5 leading-7 text-[var(--text-primary)] font-normal text-[15px] sm:text-base" {...props} />
+            ),
+            strong: ({ ...props }) => (
+              <strong className="font-semibold text-[var(--text-primary)]" {...props} />
+            ),
+            em: ({ ...props }) => (
+              <em className="italic text-[var(--text-primary)]" {...props} />
+            ),
+            del: ({ ...props }) => (
+              <del className="line-through text-[var(--text-muted)] opacity-85" {...props} />
             ),
             blockquote: ({ ...props }) => (
-              <blockquote className="my-4 border-l-4 border-[var(--accent)] bg-[var(--surface-hover)] py-2.5 px-4 rounded-r-lg italic text-[var(--text-secondary)]" {...props} />
+              <blockquote className="my-4 border-l-4 border-[var(--accent)] bg-[var(--surface-secondary)]/80 py-3 px-4 rounded-r-xl italic text-[var(--text-primary)] shadow-2xs leading-relaxed" {...props} />
             ),
             ul: ({ ...props }) => (
-              <ul className="my-3 list-disc list-inside space-y-1.5 pl-2 text-[var(--text-secondary)]" {...props} />
+              <ul className="my-3.5 list-disc list-outside ml-5 space-y-2 text-[var(--text-primary)] marker:text-[var(--accent)]" {...props} />
             ),
             ol: ({ ...props }) => (
-              <ol className="my-3 list-decimal list-inside space-y-1.5 pl-2 text-[var(--text-secondary)]" {...props} />
+              <ol className="my-3.5 list-decimal list-outside ml-5 space-y-2 text-[var(--text-primary)] marker:text-[var(--accent)] marker:font-semibold" {...props} />
             ),
             li: ({ ...props }) => (
-              <li className="leading-7" {...props} />
+              <li className="leading-7 text-[var(--text-primary)] pl-1" {...props} />
+            ),
+            input: ({ checked, disabled, ...props }: any) => (
+              <input
+                type="checkbox"
+                checked={checked}
+                disabled={disabled}
+                className="h-4 w-4 rounded accent-[var(--accent)] cursor-default mr-2.5 align-middle -mt-0.5"
+                {...props}
+              />
             ),
             hr: ({ ...props }) => (
-              <hr className="my-6 border-[var(--border)]" {...props} />
+              <hr className="my-8 border-t border-[var(--border)]" {...props} />
             ),
             table: ({ ...props }) => (
-              <div className="my-6 overflow-x-auto max-w-full rounded-lg border border-[var(--border)] [scrollbar-width:thin]">
-                <table className="min-w-full text-left border-collapse text-xs sm:text-sm" {...props} />
+              <div className="my-6 overflow-x-auto max-w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] shadow-2xs [scrollbar-width:thin]">
+                <table className="min-w-full text-left border-collapse text-xs sm:text-sm [&_tr:hover]:bg-[var(--surface-hover)]/40 transition-colors" {...props} />
               </div>
             ),
             thead: ({ ...props }) => (
               <thead className="bg-[var(--surface-secondary)] border-b border-[var(--border)] font-semibold text-[var(--text-primary)]" {...props} />
             ),
             th: ({ ...props }) => (
-              <th className="px-4 py-3 font-semibold" {...props} />
+              <th className="px-4 py-3 font-semibold text-[var(--text-primary)] tracking-tight" {...props} />
             ),
             td: ({ ...props }) => (
-              <td className="px-4 py-2.5 border-t border-[var(--border)] text-[var(--text-secondary)]" {...props} />
+              <td className="px-4 py-2.5 border-t border-[var(--border)] text-[var(--text-primary)] font-normal transition-colors" {...props} />
             ),
             a: ({ href, children, ...props }: any) => {
               const safe = isSafeUrl(href)
@@ -205,7 +223,7 @@ export const Preview = forwardRef<PreviewHandle, PreviewProps>(({
               return (
                 <a
                   href={href}
-                  className="font-medium text-[var(--accent)] underline decoration-[var(--accent)]/40 hover:decoration-[var(--accent)] underline-offset-2 transition-colors"
+                  className="font-medium text-[var(--accent)] underline decoration-[var(--accent)]/40 hover:decoration-[var(--accent)] hover:text-[var(--accent-hover)] underline-offset-2 transition-colors"
                   target="_blank"
                   rel="noopener noreferrer"
                   {...props}
@@ -255,7 +273,7 @@ export const Preview = forwardRef<PreviewHandle, PreviewProps>(({
               if (isInline) {
                 return (
                   <code
-                    className="rounded bg-[var(--surface-secondary)] border border-[var(--border-subtle)] px-1.5 py-0.5 font-mono text-[13px] text-[var(--accent)] font-medium"
+                    className="rounded-md bg-[var(--surface-secondary)] border border-[var(--border)] px-1.5 py-0.5 font-mono text-[13px] text-[var(--accent)] font-semibold selection:bg-[var(--accent-soft)]"
                     {...props}
                   >
                     {children}
@@ -263,7 +281,7 @@ export const Preview = forwardRef<PreviewHandle, PreviewProps>(({
                 )
               }
               return (
-                <div className="my-4 max-w-full overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--surface-secondary)] text-[var(--text-primary)] shadow-2xs">
+                <div className="my-4 max-w-full overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] text-[var(--text-primary)] shadow-2xs">
                   <pre className="p-3 sm:p-4 overflow-x-auto max-w-full text-xs sm:text-[13px] font-mono leading-relaxed bg-transparent [scrollbar-width:thin]">
                     <code className={className} {...props}>
                       {children}
