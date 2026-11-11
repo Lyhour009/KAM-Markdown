@@ -236,6 +236,8 @@ export function App() {
 
   // Export Preview as PNG
   const [isExportingPng, setIsExportingPng] = useState<boolean>(false)
+  const [isExportingPdf, setIsExportingPdf] = useState<boolean>(false)
+  const [isExportingWord, setIsExportingWord] = useState<boolean>(false)
 
   const handleExportPng = useCallback(async () => {
     if (!previewRef.current) return
@@ -252,6 +254,53 @@ export function App() {
       showToast(t('exportPngFailed'), 'error')
     } finally {
       setIsExportingPng(false)
+    }
+  }, [title, showToast, t])
+
+  // Export Preview as PDF
+  const handleExportPdf = useCallback(async () => {
+    if (!previewRef.current) return
+    setIsExportingPdf(true)
+    try {
+      const success = await previewRef.current.exportAsPdf(title)
+      if (success) {
+        showToast(t('exportPdfSuccess'), 'success')
+      } else {
+        showToast(t('exportPdfFailed'), 'error')
+      }
+    } catch (err) {
+      console.error('Export PDF failed:', err)
+      showToast(t('exportPdfFailed'), 'error')
+    } finally {
+      setIsExportingPdf(false)
+    }
+  }, [title, showToast, t])
+
+  // Export Preview as Word (.docx)
+  const handleExportWord = useCallback(async () => {
+    if (!previewRef.current) return
+    setIsExportingWord(true)
+    try {
+      const success = await previewRef.current.exportAsWord(title)
+      if (success) {
+        showToast(t('exportWordSuccess'), 'success')
+      } else {
+        showToast(t('exportWordFailed'), 'error')
+      }
+    } catch (err) {
+      console.error('Export Word failed:', err)
+      showToast(t('exportWordFailed'), 'error')
+    } finally {
+      setIsExportingWord(false)
+    }
+  }, [title, showToast, t])
+
+  // Print Document (Native Vector Print-to-PDF)
+  const handlePrint = useCallback(() => {
+    if (!previewRef.current) return
+    const success = previewRef.current.printDocument(title)
+    if (!success) {
+      showToast(t('exportPdfFailed'), 'error')
     }
   }, [title, showToast, t])
 
@@ -340,6 +389,11 @@ export function App() {
           onDownloadClick={handleDownload}
           onExportPngClick={handleExportPng}
           isExportingPng={isExportingPng}
+          onExportPdfClick={handleExportPdf}
+          isExportingPdf={isExportingPdf}
+          onExportWordClick={handleExportWord}
+          isExportingWord={isExportingWord}
+          onPrintClick={handlePrint}
           onResetClick={() => setIsResetModalOpen(true)}
           onSecurityClick={() => setIsSecurityModalOpen(true)}
           onShortcutsClick={() => setIsShortcutsModalOpen(true)}

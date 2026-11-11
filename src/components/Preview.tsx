@@ -6,7 +6,7 @@ import rehypeHighlight from 'rehype-highlight'
 import { PenLine } from 'lucide-react'
 import type { Language, Theme } from '../types'
 import { isSafeUrl } from '../utils/securityUtils'
-import { exportElementAsPng } from '../utils/exportUtils'
+import { exportElementAsPng, exportElementAsPdf, exportElementAsWord, printElementAsPdf } from '../utils/exportUtils'
 import { getTranslation } from '../locales'
 import { MermaidDiagram } from './MermaidDiagram'
 
@@ -23,6 +23,9 @@ function extractRawText(node: any): string {
 export interface PreviewHandle {
   scrollToPercentage: (percentage: number) => void
   exportAsPng: (filename: string) => Promise<boolean>
+  exportAsPdf: (filename: string) => Promise<boolean>
+  exportAsWord: (filename: string) => Promise<boolean>
+  printDocument: (filename: string) => boolean
   getScrollTop: () => number
   setScrollTop: (scrollTop: number) => void
 }
@@ -85,6 +88,21 @@ export const Preview = forwardRef<PreviewHandle, PreviewProps>(({
           overflow: 'visible',
         },
       })
+    },
+    exportAsPdf: async (filename: string) => {
+      const el = containerRef.current
+      if (!el) return false
+      return await exportElementAsPdf(el, filename)
+    },
+    exportAsWord: async (filename: string) => {
+      const el = containerRef.current
+      if (!el) return false
+      return await exportElementAsWord(el, filename)
+    },
+    printDocument: (filename: string) => {
+      const el = containerRef.current
+      if (!el) return false
+      return printElementAsPdf(el, filename)
     },
     getScrollTop: () => {
       return containerRef.current ? containerRef.current.scrollTop : 0
